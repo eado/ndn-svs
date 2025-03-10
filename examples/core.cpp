@@ -22,6 +22,8 @@
 
 #include <ndn-svs/svsync.hpp>
 
+#include <unistd.h>
+
 struct Options
 {
   std::string prefix;
@@ -32,7 +34,7 @@ class Program
 {
 public:
   Program(const Options& options)
-    : m_options(options)
+    : m_options(options), face("forwarder")
   {
     // This is a usage example of the low level SvSyncCore API.
 
@@ -92,6 +94,8 @@ main(int argc, char** argv)
     std::cerr << "Usage: " << argv[0] << " <prefix>" << std::endl;
     return 1;
   }
+
+  sleep(2);
 
   Options opt;
   opt.prefix = "/ndn/svs";
