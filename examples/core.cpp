@@ -28,6 +28,7 @@ struct Options
 {
   std::string prefix;
   std::string m_id;
+  char** argv;
 };
 
 class Program
@@ -47,7 +48,7 @@ public:
       ndn::Name(m_options.m_id)                // Unique prefix for this node
     );
 
-    std::cout << "SVS client starting: " << m_options.m_id << std::endl;
+    /* std::cout << "SVS client starting: " << m_options.m_id << std::endl; */
   }
 
   void run()
@@ -55,13 +56,19 @@ public:
     // Begin processing face events in a separate thread.
     std::thread svsThread([this] { face.processEvents(); });
 
-    // Increment our sequence number every 3 seconds
-    while (true) {
-      auto seq = m_svs->getSeqNo() + 1;
-      m_svs->updateSeqNo(seq);
-      std::cout << "Published sequence number: " << m_options.m_id << "=" << seq << std::endl;
-      std::this_thread::sleep_for(std::chrono::seconds(3));
-    }
+    m_svs->updateSeqNo(atoi(m_options.argv[1]), ndn::Name("/A"));
+    m_svs->updateSeqNo(atoi(m_options.argv[2]), ndn::Name("/B"));
+    m_svs->updateSeqNo(atoi(m_options.argv[3]), ndn::Name("/C"));
+    m_svs->updateSeqNo(atoi(m_options.argv[4]), ndn::Name("/D"));
+    m_svs->updateSeqNo(atoi(m_options.argv[5]), ndn::Name("/E"));
+
+    /* // Increment our sequence number every 3 seconds */
+    /* while (true) { */
+    /*   auto seq = m_svs->getSeqNo() + 1; */
+    /*   m_svs->updateSeqNo(seq); */
+    /*   std::cout << "Published sequence number: " << m_options.m_id << "=" << seq << std::endl; */
+    /*   std::this_thread::sleep_for(std::chrono::seconds(3)); */
+    /* } */
 
     // Wait for the SVSync thread to finish on exit.
     svsThread.join();
@@ -75,7 +82,7 @@ protected:
   {
     for (size_t i = 0; i < v.size(); i++) {
       for (ndn::svs::SeqNo s = v[i].low; s <= v[i].high; ++s) {
-        std::cout << "Received update: " << v[i].nodeId << "=" << s << std::endl;
+        std::cout << v[i].nodeId << "=" << s << std::endl;
       }
     }
   }
@@ -90,16 +97,15 @@ public:
 int
 main(int argc, char** argv)
 {
-  if (argc != 2) {
-    std::cerr << "Usage: " << argv[0] << " <prefix>" << std::endl;
-    return 1;
-  }
-
-  sleep(2);
+  /* if (argc != 5) { */
+  /*   std::cerr << "Usage: " << argv[0] << " <prefix>" << std::endl; */
+  /*   return 1; */
+  /* } */
 
   Options opt;
   opt.prefix = "/ndn/svs";
-  opt.m_id = argv[1];
+  opt.m_id = "/cpp";
+  opt.argv = argv;
 
   Program program(opt);
   program.run();
